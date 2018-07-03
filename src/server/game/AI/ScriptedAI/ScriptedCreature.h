@@ -130,7 +130,7 @@ class TC_GAME_API DummyEntryCheckPredicate
         bool operator()(ObjectGuid) { return true; }
 };
 
-+num AI_SC_Events
+enum AI_SC_Events
 {
     AI_EVENT_NONE = 0,
     AI_EVENT_VICTIM = 1,

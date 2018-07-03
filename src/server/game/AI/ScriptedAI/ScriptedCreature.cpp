@@ -158,7 +158,7 @@ void ScriptedAI::AttackStart(Unit* who)
 // AI EVENTS - START
 void ScriptedAI::DoVictim()
 {
-    UpdateVictim()
+    UpdateVictim();
 }
 
 void ScriptedAI::DoAttack()
