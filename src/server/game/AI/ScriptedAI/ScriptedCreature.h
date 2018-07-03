@@ -130,6 +130,18 @@ class TC_GAME_API DummyEntryCheckPredicate
         bool operator()(ObjectGuid) { return true; }
 };
 
++num AI_SC_Events
+{
+    AI_EVENT_NONE = 0,
+    AI_EVENT_VICTIM = 1,
+    AI_EVENT_ATTACK = 2,
+    AI_EVENT_FOLLOW = 3
+};
+#define AI_FOLLOW_DIST  1.0f
+#define AI_EVENT_ATTACK_TIMER       1000
+#define AI_EVENT_FOLLOW_TIMER       2500
+#define AI_EVENT_VICTIM_TIMER       1000
+
 struct TC_GAME_API ScriptedAI : public CreatureAI
 {
     explicit ScriptedAI(Creature* creature);
@@ -143,6 +155,10 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
 
     //Called at World update tick
     virtual void UpdateAI(uint32 diff) override;
+	
+	virtual void DoVictim();
+	virtual void DoAttack();
+	virtual void DoFollow();
 
     // *************
     // Variables
@@ -298,6 +314,7 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
         Difficulty _difficulty;
         bool _isCombatMovementAllowed;
         bool _isHeroic;
+		EventMap _event;
 };
 
 class TC_GAME_API BossAI : public ScriptedAI

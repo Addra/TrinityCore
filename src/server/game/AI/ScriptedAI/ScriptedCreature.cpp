@@ -129,6 +129,13 @@ ScriptedAI::ScriptedAI(Creature* creature) : CreatureAI(creature),
 {
     _isHeroic = me->GetMap()->IsHeroic();
     _difficulty = Difficulty(me->GetMap()->GetSpawnMode());
+	
+    _event.Reset();
+
+    _event.ScheduleEvent(AI_SC_Events::AI_EVENT_VICTIM, AI_EVENT_VICTIM_TIMER);
+    _event.ScheduleEvent(AI_SC_Events::AI_EVENT_ATTACK, AI_EVENT_ATTACK_TIMER);
+    if (me->GetCharmerOrOwner())
+        _event.ScheduleEvent(AI_SC_Events::AI_EVENT_FOLLOW, AI_EVENT_FOLLOW_TIMER);
 }
 
 void ScriptedAI::AttackStartNoMove(Unit* who)
@@ -148,13 +155,51 @@ void ScriptedAI::AttackStart(Unit* who)
         AttackStartNoMove(who);
 }
 
-void ScriptedAI::UpdateAI(uint32 /*diff*/)
+// AI EVENTS - START
+void ScriptedAI::DoVictim()
 {
-    //Check if we have a current target
-    if (!UpdateVictim())
-        return;
+    UpdateVictim()
+}
 
+void ScriptedAI::DoAttack()
+{
     DoMeleeAttackIfReady();
+}
+ 
+void ScriptedAI::DoFollow()
+{
+    if (!me->IsInCombat())
+    {
+        Unit* owner = me->GetCharmerOrOwner();
+        if (owner)
+        {
+            me->GetMotionMaster()->Clear();
+            me->GetMotionMaster()->MoveFollow(owner, AI_FOLLOW_DIST, (float) M_PI);
+        }
+    }
+}
+// AI EVENTS - FINISH
+
+void ScriptedAI::UpdateAI(uint32 diff)
+{
+    _event.Update(diff);
+    while (uint32 eventCode = _event.ExecuteEvent())
+    {
+        switch (eventCode)
+        {
+        case AI_SC_Events::AI_EVENT_VICTIM:
+            DoVictim();
+            _event.ScheduleEvent(AI_SC_Events::AI_EVENT_VICTIM, AI_EVENT_VICTIM_TIMER);
+        case AI_SC_Events::AI_EVENT_ATTACK:
+            DoAttack();
+            _event.ScheduleEvent(AI_SC_Events::AI_EVENT_ATTACK, AI_EVENT_ATTACK_TIMER);
+            break;
+        case AI_SC_Events::AI_EVENT_FOLLOW:
+            DoFollow();
+            _event.ScheduleEvent(AI_SC_Events::AI_EVENT_FOLLOW, AI_EVENT_FOLLOW_TIMER);
+            break;
+        }
+    }
 }
 
 void ScriptedAI::DoStartMovement(Unit* victim, float distance, float angle)

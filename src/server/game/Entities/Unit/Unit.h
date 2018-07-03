@@ -813,6 +813,7 @@ class TC_GAME_API Unit : public WorldObject
             ASSERT(m_attacking);
             return m_attacking;
         }
+		bool HasVictim() { return (m_attacking); }
 
         void ValidateAttackersAndOwnTarget();
         void CombatStop(bool includingCast = false, bool mutualPvP = true);

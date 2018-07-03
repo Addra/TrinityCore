@@ -945,6 +945,7 @@ public:
 
         void FindMinions(Unit* owner)
         {
+			
             std::list<Creature*> MinionList;
             owner->GetAllMinionsByEntry(MinionList, NPC_GHOULS);
 
@@ -963,29 +964,25 @@ public:
             }
         }
 
-        void UpdateAI(uint32 /*diff*/) override
+        void DoVictim() override
         {
-            if (!me->IsInCombat())
+            if (Unit* owner = me->GetOwner())
             {
-                if (Unit* owner = me->GetOwner())
+                Player* plrOwner = owner->ToPlayer();
+                if (plrOwner && plrOwner->IsInCombat())
                 {
-                    Player* plrOwner = owner->ToPlayer();
-                    if (plrOwner && plrOwner->IsInCombat())
-                    {
-                        if (plrOwner->getAttackerForHelper() && plrOwner->getAttackerForHelper()->GetEntry() == NPC_GHOSTS)
-                            AttackStart(plrOwner->getAttackerForHelper());
-                        else
-                            FindMinions(owner);
-                    }
+                    if (plrOwner->getAttackerForHelper() && plrOwner->getAttackerForHelper()->GetEntry() == NPC_GHOSTS)
+                        AttackStart(plrOwner->getAttackerForHelper());
+                    else
+                        FindMinions(owner);
                 }
             }
-
-            if (!UpdateVictim() || !me->GetVictim())
-                return;
-
-            //ScriptedAI::UpdateAI(diff);
+		}
+		
+		void DoAttack() override
+        {
             //Check if we have a current target
-            if (me->EnsureVictim()->GetEntry() == NPC_GHOSTS)
+            if (me->HasVictim() && me->EnsureVictim() && me->EnsureVictim()->GetEntry() == NPC_GHOSTS)
             {
                 if (me->isAttackReady())
                 {
@@ -997,6 +994,7 @@ public:
                     }
                 }
             }
+			ScriptedAI::DoAttack();
         }
     };
 
